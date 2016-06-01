@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using Sandbox.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
-//using Sandbox.Common.ObjectBuilders;
-//using SpaceEngineers.Game.ModAPI;
-//using SpaceEngineers.Game.ModAPI.Ingame;
-//using VRage;
+using SpaceEngineers.Game.ModAPI;
+using SpaceEngineers.Game.ModAPI.Ingame;
+using VRage;
 using VRage.Game.ModAPI.Ingame;
 using VRageMath;
 
@@ -30,7 +29,7 @@ namespace SpaceEngineersScripting
 		//Configuration
 		//--------------------
 		const string
-			nameRemoteControl = "Remote Control";
+			nameController = "Remote Control";
 
 		const double
 			//angle between gravity and thrust direction that causes it to disable
@@ -84,7 +83,8 @@ namespace SpaceEngineersScripting
 			{
 				string[] elements = storage.Split(delimiter);
 				return
-					(elements.Length == 1);
+					(elements.Length == 1)
+					&& elements[0] == "";
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace SpaceEngineersScripting
 		bool restarted = true;
 		Status status;
 
-		IMyRemoteControl remoteControl;
+		IMyShipController controller;
 
 		List<IMyTerminalBlock> temp = new List<IMyTerminalBlock>();
 
@@ -154,7 +154,7 @@ namespace SpaceEngineersScripting
 			//  >get local gravity vector
 			//  >normalise vector to simplify angle calculation
 			Vector3D
-				worldGravity = remoteControl.GetNaturalGravity ();
+				worldGravity = controller.GetNaturalGravity ();
 			worldGravity.Normalize();
 
 			//Check each thruster to see if it is safe to enable
@@ -168,7 +168,7 @@ namespace SpaceEngineersScripting
 			for (int i=0; i<temp.Count; i++) {
 				IMyThrust thruster = (IMyThrust)temp[i];
 
-				if (thruster.CubeGrid != remoteControl.CubeGrid)
+				if (thruster.CubeGrid != controller.CubeGrid)
 					continue;
 
 				count++;
@@ -201,26 +201,26 @@ namespace SpaceEngineersScripting
 			status.initialised = false;
 			Echo ("initialising...");
 
-			//Find Remote Control
-			remoteControl = null;
-			GridTerminalSystem.GetBlocksOfType<IMyRemoteControl> (temp);
+			//Find Controller
+			controller = null;
+			GridTerminalSystem.GetBlocksOfType<IMyShipController> (temp);
 			for (int i=0; i < temp.Count; i++){
-				if (temp[i].CustomName == nameRemoteControl) {
-					if (remoteControl == null) {
-						remoteControl = (IMyRemoteControl)temp[i];
+				if (temp[i].CustomName == nameController) {
+					if (controller == null) {
+						controller = (IMyShipController)temp[i];
 					} else {
-						Echo ("ERROR: duplicate name \"" +nameRemoteControl +"\"");
+						Echo ("ERROR: duplicate name \"" +nameController +"\"");
 						return false;
 					}
 				}
 			}
-			//verify that the remote control was found
-			if (remoteControl == null) {
-				Echo ("ERROR: block not found \"" +nameRemoteControl +"\"");
+			//verify that the Controller was found
+			if (controller == null) {
+				Echo ("ERROR: block not found \"" +nameController +"\"");
 				return false;
 			}
-			//validate that the remote control is operable
-			if ( ! ValidateBlock (remoteControl, callbackRequired:false) ) return false;
+			//validate that the Controller is operable
+			if ( ! ValidateBlock (controller, callbackRequired:false) ) return false;
 
 
 			status.initialised = true;
@@ -257,7 +257,7 @@ namespace SpaceEngineersScripting
 
 		private bool Validate(){
 			bool valid =
-				ValidateBlock (remoteControl, callbackRequired: false);
+				ValidateBlock (controller, callbackRequired: false);
 
 			if ( !valid ) {
 				Echo ("Validation of saved blocks failed.");

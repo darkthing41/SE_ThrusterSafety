@@ -16,12 +16,12 @@ Determines whether a thruster should be enabled by checking it's orientation com
 ##Hardware
 | Block(s)      | number        | Configurable  |
 | ------------- | ------------- | ------------- |
-| Remote Control| single        | by name constant
+| Ship Controller | single        | by name constant
 | Thrusters     | [all]         | no*
 *but limited by the algorithm to those on the same grid as the Remote Control
 
 ##Configuration
-+ `nameRemoteControl`: the name of the Remote Control used to identify the main grid and get local gravity
++ `nameController`: the name of the Remote Control used to identify the main grid and get local gravity
 + `angleSafetyCutoff`: the angle from gravity above which thrusters will be disabled (in radians)
 
 ##Standard Blocks
